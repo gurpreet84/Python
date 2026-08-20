@@ -99,7 +99,12 @@ def get_transcript(video_id: str) -> str:
             "pip install youtube-transcript-api"
         )
     try:
-        segments = YouTubeTranscriptApi.get_transcript(video_id)
+        if hasattr(YouTubeTranscriptApi, "get_transcript"):
+            # youtube-transcript-api < 1.0
+            segments = YouTubeTranscriptApi.get_transcript(video_id)
+        else:
+            # youtube-transcript-api >= 1.0 uses an instance-based fetch() API
+            segments = YouTubeTranscriptApi().fetch(video_id).to_raw_data()
     except TranscriptsDisabled as exc:
         raise RuntimeError("Transcripts are disabled for this video.") from exc
     except NoTranscriptFound as exc:
