@@ -1,9 +1,9 @@
 # YouTube Video Summarizer
 
-A small desktop GUI app: paste a YouTube video URL, click **Generate**, and it
-produces a standalone HTML page — named after the video's title — containing
-just the **key takeaways as a bulleted list**. A command-line version and a
-reusable Python library are also included.
+Paste a YouTube video URL and get a standalone HTML page — named after the
+video's title — containing just the **key takeaways as a bulleted list**.
+Available as a local **web app** (Flask, open in your browser), a desktop
+**GUI** (Tkinter), a **command-line** tool, and a reusable Python library.
 
 ## How it works
 
@@ -35,7 +35,18 @@ pip install -r requirements.txt
 
 ## Usage
 
-### GUI (recommended)
+### Web app (recommended)
+
+```bash
+python app.py
+```
+
+Then open **http://127.0.0.1:5000** in your browser. Paste a YouTube URL and
+click **Generate** — the key takeaways are shown on the page, and an HTML
+file named after the video's title is saved to the `output/` folder (also
+reachable via the "Open saved HTML page" link).
+
+### GUI
 
 ```bash
 python gui.py
