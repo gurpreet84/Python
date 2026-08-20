@@ -1,10 +1,9 @@
 # YouTube Video Summarizer
 
-A small command-line application that takes a YouTube video URL and prints:
-
-* the video's **title** and **author/channel name**
-* a bulleted list of **key takeaways** (the most important sentences)
-* a short **summary** of the whole video
+A small desktop GUI app: paste a YouTube video URL, click **Generate**, and it
+produces a standalone HTML page — named after the video's title — containing
+just the **key takeaways as a bulleted list**. A command-line version and a
+reusable Python library are also included.
 
 ## How it works
 
@@ -14,8 +13,9 @@ A small command-line application that takes a YouTube video URL and prints:
 4. The transcript is split into sentences and each sentence is scored by the
    normalized frequency of its (non-stopword) words — a simple, dependency-free
    extractive summarization technique. The highest-scoring sentences become the
-   key takeaways, and the top sentences (restored to their original order)
-   become the summary paragraph.
+   key takeaways.
+5. The keynotes are written out as an HTML page titled after the video, saved
+   as `<sanitized video title>.html`.
 
 No external LLM/API key is required — everything runs locally once the
 transcript has been downloaded.
@@ -24,6 +24,8 @@ transcript has been downloaded.
 
 * The video must have captions/subtitles available (either uploaded or
   auto-generated) for a transcript to be fetched.
+* `tkinter` for the GUI — included with most Python installs; on Debian/Ubuntu
+  install it with `sudo apt-get install python3-tk` if it's missing.
 
 ## Setup
 
@@ -33,20 +35,37 @@ pip install -r requirements.txt
 
 ## Usage
 
+### GUI (recommended)
+
+```bash
+python gui.py
+```
+
+1. Paste a YouTube URL (e.g. `https://www.youtube.com/watch?v=dQw4w9WgXcQ`).
+2. Optionally choose an output folder (defaults to the current directory).
+3. Click **Generate**. The key takeaways appear in the window, and an HTML
+   file named after the video's title is saved to the chosen folder.
+4. Click **Open HTML** to view it in your browser.
+
+### Command line
+
 ```bash
 python youtube_summarizer.py
 ```
 
-You'll be prompted to paste a YouTube URL, e.g. `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
-or `https://youtu.be/dQw4w9WgXcQ`.
+You'll be prompted to paste a YouTube URL, and both the key takeaways and a
+paragraph summary are printed to the terminal.
 
-You can also use it as a library:
+### As a library
 
 ```python
-from youtube_summarizer import summarize_youtube_video
+from youtube_summarizer import extract_video_id, get_video_metadata, get_transcript, summarize, save_keynotes_html
 
-result = summarize_youtube_video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-print(result["title"], result["author"])
-print(result["keynotes"])
-print(result["summary"])
+url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+metadata = get_video_metadata(url)
+transcript = get_transcript(extract_video_id(url))
+_, keynotes = summarize(transcript, num_keynotes=8)
+
+filepath = save_keynotes_html(metadata["title"], keynotes, output_dir=".")
+print("Saved to", filepath)
 ```

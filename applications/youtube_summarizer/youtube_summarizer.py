@@ -21,7 +21,9 @@ Usage:
     (then paste a YouTube URL when prompted)
 """
 
+import html
 import json
+import os
 import re
 import sys
 import urllib.parse
@@ -181,6 +183,64 @@ def summarize_youtube_video(
         "summary": summary,
         "keynotes": keynotes,
     }
+
+
+def sanitize_filename(name: str) -> str:
+    """Turn a video title into a safe, cross-platform filename (without extension)."""
+    name = re.sub(r'[\\/*?:"<>|]', "", name).strip()
+    name = re.sub(r"\s+", " ", name)
+    return name[:150] if name else "video_keynotes"
+
+
+def generate_keynotes_html(title: str, keynotes: list) -> str:
+    """Build a standalone HTML page titled after the video, listing keynotes as bullets."""
+    escaped_title = html.escape(title)
+    items = "\n".join(f"      <li>{html.escape(point)}</li>" for point in keynotes)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{escaped_title}</title>
+  <style>
+    body {{
+      font-family: -apple-system, Segoe UI, Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #1a1a1a;
+      background: #fff;
+    }}
+    h1 {{
+      font-size: 1.6rem;
+      border-bottom: 2px solid #cc0000;
+      padding-bottom: 10px;
+    }}
+    ul {{
+      line-height: 1.8;
+      font-size: 1.05rem;
+    }}
+    li {{
+      margin-bottom: 12px;
+    }}
+  </style>
+</head>
+<body>
+  <h1>{escaped_title}</h1>
+  <ul>
+{items}
+  </ul>
+</body>
+</html>
+"""
+
+
+def save_keynotes_html(title: str, keynotes: list, output_dir: str = ".") -> str:
+    """Write the keynotes HTML page to `output_dir`, named after the video title."""
+    os.makedirs(output_dir, exist_ok=True)
+    filepath = os.path.join(output_dir, sanitize_filename(title) + ".html")
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.write(generate_keynotes_html(title, keynotes))
+    return filepath
 
 
 def main() -> None:
